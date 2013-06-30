@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <title>Drawing</title>
+</head>
+<body>
+<h1>Please draw in the border.</h1>
+<p class = "solid">
+<canvas id="canvas1" width="720" height="480"></canvas>
+</p>
+<script src="/socket.io/lib/socket.io.js"></script>
+<script>
+    //vars
+    var canvas1=document.getElementById('canvas1');
+    var context1=canvas1.getContext('2d');
+    var readytoDraw = false;
+    var canvasX = new Array();
+    var canvasY = new Array();
+    var isContinuous = new Array();
+    var track = {};
+    //socket.io
+    var socket = io.connect('http://localhost');
+    socket.on('news', function (data) {
+        console.log(data);
+        socket.emit('webBegin');
+    });
+    socket.on('echo', function (data) {
+        pushPoints(data.x,data.y,data.isContinuous);
+        draw(context1,canvasX,canvasY,isContinuous,track);
+    });
+    var sentData = function(CoorX,CoorY,isContinuous)
+    {
+        socket.emit('gotData',{'x':CoorX, 'y':CoorY, 'isContinuous':isContinuous});
+    }
+    //canvas events
+    //context,xArray,yArray,isContinuous,track
+    canvas1.onmousedown = function(e)
+    {
+        readytoDraw = true;
+        sentData(e.pageX-this.offsetLeft, e.pageY-this.offsetTop,false);
+        //pushPoints(e.pageX-this.offsetLeft, e.pageY-this.offsetTop,false);
+        //draw(context1,canvasX,canvasY,isContinuous,track);
+    }
+    canvas1.onmousemove = function(e)
+    {
+        if(readytoDraw){
+            sentData(e.pageX-this.offsetLeft, e.pageY-this.offsetTop,true);
+        }
+    }
+    canvas1.onmouseup = function()
+    {
+        readytoDraw = false;
+    }
+    canvas1.onmouseout = function()
+    {
+        readytoDraw = false;
+    }
+    var pushPoints = function(x,y,con){
+        canvasX.push(x);
+        canvasY.push(y);
+        isContinuous.push(con);
+    }
+    var draw = function(context,xArray,yArray,con,track){
+        context.strokeStyle = '#000000';
+        context.lineJoin = 'round';
+        context.lineWidth = 3;
+        while(xArray.length>0){
+            track.preX = track.x;
+            track.preY = track.y;
+            track.x = xArray.pop();
+            track.y = yArray.pop();
+            track.isContinuous = isContinuous.pop();
+            context.beginPath();
+            if(track.isContinuous){
+                context.moveTo(track.preX,track.preY);
+            }
+            else{
+                context.moveTo(track.x+1,track.y+1);
+            }
+            context.lineTo(track.x,track.y);
+            context.closePath();
+            context.stroke();
+        }
+    }
+
+</script>
+</body>
+</html>

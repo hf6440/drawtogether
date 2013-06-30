@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="/socket.io/lib/socket.io.js"></script>
+<script>
+    var socket = io.connect('http://localhost');
+    socket.on('news', function (data) {
+        console.log(data);
+        socket.emit('webBegin');
+    });
+    socket.on('echo', function (data) {
+        //alert(data);
+    });
+    var sentData=function()
+    {
+        var ranNum = Math.random();
+        //alert(ranNum);
+        socket.emit('gotData',ranNum);
+    }
+    setInterval('sentData()',100);
+
+</script>
+    <title>Express</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+<body>
+<h1>Express2</h1>
+<a href=./  >W3C HTML</a>
+<p>Welcome to Express</p>
+</body>
+</html>
