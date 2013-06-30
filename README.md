@@ -15,6 +15,7 @@ June 30 2013 - 	Users can access the white board and draw together on it now.
 		(Please be aware of that the webpage will link to the server at 'http://localhost'. If you want to access the board from outside of the server, please change the address in the canvas.html. Thanks.)
 
 July 01 2013 -  Coming soon. Thank you.
+
 ================================================================================================
 Envoirment: Windows 7, WebStorm - 6.0.2, Express - 3.3.1, Node.JS - v0.10.5, Socket.IO - 0.9.16.
 Browser I used: Chrome 25.0.1364.160 m, Firefox 21 and 22.
