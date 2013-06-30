@@ -2,7 +2,7 @@
 /**
  * Module dependencies.
  */
-
+//requires
 var express = require('express')
   , routes = require('./routes')
   , user = require('./routes/user')
@@ -22,6 +22,23 @@ app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
+//variables
+var numQue = 0;
+var shreQue = 0;
+var socketQueue = new Array();
+var userQueue = new Array();
+
+//definition of functions
+Array.prototype.indexOf=function(element)
+{
+    for (i = 0; i < this.length; i++)
+    {
+        if (element==this[i])
+            return i;
+    }
+    return -1;
+}
+
 // development only
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
@@ -32,6 +49,11 @@ app.get('/index',function(req,res)
     }
 );
 app.get('/canvas',function(req,res)
+    {
+        res.render("canvas.html");
+    }
+);
+app.get('/',function(req,res)
     {
         res.render("canvas.html");
     }
@@ -52,16 +74,42 @@ var sentEcho = function(data,socket)
     socket.emit('echo',{'x':data.x, 'y':data.y, 'isContinuous':data.isContinuous});
 }
 io.sockets.on('connection', function (socket) {
-    console.log("[TEST]set up con");
-    socket.emit('news', { hello: 'world' });
-    socket.on('webBegin',function()
-        {
-            console.log("Connection began from Web");
+    numQue += 1;
+    shreQue += 1;
+    socketQueue.push(socket); //TEST
+    socket.emit('news', { 'hello': numQue });
+    socket.on('webBegin',function(data){
+            console.log("[Status]"+ data.username + " " + shreQue + " logged in.");
+            console.log("[Status]Have " + numQue + " Connection");
+            userQueue.push(data.username + " "+ shreQue);
+            for(var i=0 ; i<numQue ; i++)
+                socketQueue[i].emit("someoneJoin",{'username':data.username + " "+ shreQue});
         }
     );
     socket.on('gotData', function (data) {
-        sentEcho(data,socket);
-        console.log("X: " + data.x + ", Y: " + data.y + " " + data.isContinuous);
+        //TEST
+        for(var i=0;i<numQue;i++){
+            sentEcho(data,socketQueue[i]);
+            console.log("[ Data ]" + "X: " + data.x + ", Y: " + data.y + " " + data.isContinuous);
+        }
     });
-}
+    socket.on('disconnect',function(){
+        var toDel = socketQueue.indexOf(this);
+        if(toDel != -1){
+            console.log("[Status]"+ userQueue[toDel]  +" logged off." );
+            for(var i=0 ; i<numQue ; i++)
+                socketQueue[i].emit("someoneLeft",{'username':userQueue[toDel]});
+            socketQueue.splice(toDel,1);
+            userQueue.splice(toDel,1);
+            --numQue;
+            console.log("[Status]" + numQue + " connections in group." );
+            if(numQue==0) shreQue=0;
+        }
+    });
+    socket.on('cleanBoard',function(){
+        console.log('Clean the white board.');
+        for(var i=0 ; i<numQue ; i++)
+            socketQueue[i].emit('cleanBoard');
+    });
+    }
 );

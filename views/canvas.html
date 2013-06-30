@@ -6,15 +6,18 @@
 </head>
 <body>
 <h1>Please draw in the border.</h1>
+<h3>This page will connect to 'http://localhost', so please change the <br>address(in 26th line) to the corresponding static IP address of your server.</h3>
 <p class = "solid">
-<canvas id="canvas1" width="720" height="480"></canvas>
+    <canvas id="canvas1" width="720" height="480"></canvas>
 </p>
+<button onclick="emitcleanBoard()">Clean the Whiteboard</button>
 <script src="/socket.io/lib/socket.io.js"></script>
 <script>
     //vars
     var canvas1=document.getElementById('canvas1');
     var context1=canvas1.getContext('2d');
     var readytoDraw = false;
+    var userName = "New User";
     var canvasX = new Array();
     var canvasY = new Array();
     var isContinuous = new Array();
@@ -22,12 +25,20 @@
     //socket.io
     var socket = io.connect('http://localhost');
     socket.on('news', function (data) {
-        console.log(data);
-        socket.emit('webBegin');
+        socket.emit('webBegin',{'username':userName});
     });
     socket.on('echo', function (data) {
         pushPoints(data.x,data.y,data.isContinuous);
         draw(context1,canvasX,canvasY,isContinuous,track);
+    });
+    socket.on('someoneJoin', function (data) {
+        alert(data.username + " joined us.");
+    });
+    socket.on('someoneLeft', function (data) {
+        alert(data.username + " left.");
+    });
+    socket.on('cleanBoard', function () {
+        cleanBoard();
     });
     var sentData = function(CoorX,CoorY,isContinuous)
     {
@@ -82,6 +93,20 @@
             context.closePath();
             context.stroke();
         }
+    }
+    var emitcleanBoard = function()
+    {
+        socket.emit('cleanBoard');
+    }
+    var cleanBoard = function()
+    {
+        var i=0;
+        self.setInterval(function(){
+            context1.clearRect(i,0,i+120,480);
+            i+=48;
+            if(i==720) self.clearInterval();
+        },60);
+
     }
 
 </script>
