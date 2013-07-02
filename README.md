@@ -15,7 +15,7 @@ June 30 2013 - 	Users can access the white board and draw together on it now.
 		(Please be aware of that the webpage will link to the server at 'http://localhost'. If you want to access the board from outside of the server, please change the address in the canvas.html. Thanks.)
 
 July 01 2013 -  Fixed some bugs in simultaneously drawing. 
-		Add when a new user joined, new user can see what has already been drawn on the board. 
+		Add when a new user joined, new user can see what has already been drawn on the board. This is like that someone came into a classroom and he could see what was written on the whiteboard by other students. And, if nobody cleaned the board when they left the classroom, next student who came into this classroom would see what left on the whiteboard.  
 		Use a table beneath the canvas to show notice, instead of the annoying "alert()".
 
 Next Step    -	Explore method to achieve higher efficiency. Then pack code into modules..
