@@ -5,7 +5,7 @@ This is a project that based on Express, Node.JS and Socket.IO. Goal of this pro
 Users can access the server though a url. In local network, you can access the application through "http://localhost:3000/canvas".
 
 ================================================================================================
-June 29 2013 - 	You can draw on the canvas on "http://localhost:3000/canvas" if you run the app.js on server.
+June 29 2013 -	You can draw on the canvas on "http://localhost:3000/canvas" if you run the app.js on server.
 		You can see black line on the canvas when you draw. In fact, this is not done locally. It sent the coordinate of where your mouse passed to server, and the server sent it back and draw lines on canvas according to recieved coordinates.
 		So, communication between web-page and server has already been realized and it can draw according to the recieved message. Next step would be adding another client in this interaction.
 		
@@ -17,6 +17,9 @@ June 30 2013 - 	Users can access the white board and draw together on it now.
 July 01 2013 -  Fixed some bugs in simultaneously drawing. 
 		Add when a new user joined, new user can see what has already been drawn on the board. This is like that someone came into a classroom and he could see what was written on the whiteboard by other students. And, if nobody cleaned the board when they left the classroom, next student who came into this classroom would see what left on the whiteboard.  
 		Use a table beneath the canvas to show notice, instead of the annoying "alert()".
+
+July 02 2013 -	Added garbage collection (Step 1) on both server and client to improve the efficiency when a large number of users are accessing the whiteboard.
+		Fixed style of part of the code.
 
 Next Step    -	Explore method to achieve higher efficiency. Then pack code into modules..
 
