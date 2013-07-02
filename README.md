@@ -14,7 +14,11 @@ June 30 2013 - 	Users can access the white board and draw together on it now.
 		It will notice users about logging in and logging out of other users.
 		(Please be aware of that the webpage will link to the server at 'http://localhost'. If you want to access the board from outside of the server, please change the address in the canvas.html. Thanks.)
 
-July 01 2013 -  Coming soon. Thank you.
+July 01 2013 -  Fixed some bugs in simultaneously drawing. 
+		Add when a new user joined, new user can see what has already been drawn on the board. 
+		Use a table beneath the canvas to show notice, instead of the annoying "alert()".
+
+Next Step    -	Explore method to achieve higher efficiency. Then pack code into modules..
 
 ================================================================================================
 Envoirment: Windows 7, WebStorm - 6.0.2, Express - 3.3.1, Node.JS - v0.10.5, Socket.IO - 0.9.16.
