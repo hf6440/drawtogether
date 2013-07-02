@@ -27,36 +27,33 @@ var numQue = 0;
 var shreQue = 0;
 var socketQueue = new Array();
 var userQueue = new Array();
+var idQueueHistory = new Array();
 var idQueue = new Array();
 var xStorage = new Array();
 var yStorage = new Array();
 var conStorage = new Array();
 var idStorage = new Array();
 //definition of functions
-Array.prototype.indexOf=function(element)
-{
-    for (i = 0; i < this.length; i++)
-    {
+Array.prototype.indexOf=function(element){
+    for (i = 0; i < this.length; i++){
         if (element==this[i])
             return i;
     }
     return -1;
-}
-var storeMemory = function(data){
+};
+function storeMemory(data){
     xStorage.push(data.x);
     yStorage.push(data.y);
     conStorage.push(data.isContinuous);
     idStorage.push(data.ID);
 }
-var giveMemory = function(socket){
+function giveMemory(socket){
     //Give it memory about IDs
-    for(var i=0;i<idQueue.length;++i)
-    {
-        socket.emit('someoneID',{'ID':idQueue[i],'isHistory':true});
+    for(var i=0;i<idQueueHistory.length;++i){
+        socket.emit('someoneID',{'ID':idQueueHistory[i],'isHistory':true});
     }
     //Give it memory about tracks
-    for(var i=0;i<xStorage.length;++i)
-    {
+    for(var i=0;i<xStorage.length;++i){
         sentEcho({'x':xStorage[i], 'y':yStorage[i], 'isContinuous':conStorage[i],'ID':idStorage[i]},socket);
     }
 }
@@ -65,25 +62,21 @@ var giveMemory = function(socket){
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
-app.get('/index',function(req,res)
-    {
-        res.render("index.html");
-    }
-);
-app.get('/canvas',function(req,res)
-    {
+app.get('/index',function(req,res){
         res.render("canvas.html");
     }
 );
-app.get('/',function(req,res)
-    {
+app.get('/canvas',function(req,res){
+        res.render("canvas.html");
+    }
+);
+app.get('/',function(req,res){
         res.render("canvas.html");
     }
 );
 
 var httpServer = http.createServer(app).listen(app.get('port'),
-    function()
-    {
+    function(){
         console.log('Express server listening on port ' + app.get('port'));
     }
 );
@@ -91,14 +84,14 @@ var httpServer = http.createServer(app).listen(app.get('port'),
 //socket.io
 console.log('start io');
 var io = require('socket.io').listen(httpServer);
-var sentEcho = function(data,socket)
-{
+function sentEcho(data,socket){
     socket.emit('echo',{'x':data.x, 'y':data.y, 'isContinuous':data.isContinuous,'ID':data.ID});
 }
-io.sockets.on('connection', function (socket) {
+io.sockets.on('connection', function (socket){
     numQue += 1;
     shreQue += 1;
     socketQueue.push(socket);
+
     socket.emit('news', { 'hello': numQue });
     socket.on('webBegin',function(data){
             giveMemory(socket); //Give the new member history
@@ -110,9 +103,10 @@ io.sockets.on('connection', function (socket) {
                 if(socketQueue[i] != socket) socketQueue[i].emit("someoneJoin",{'username':data.username + " "+ shreQue});
             }
             idQueue.push(shreQue);
+            idQueueHistory.push(shreQue);
         }
     );
-    socket.on('gotData', function (data) {
+    socket.on('gotData', function (data){
         for(var i=0;i<numQue;i++){
             sentEcho(data,socketQueue[i]);
         storeMemory(data);
@@ -123,12 +117,13 @@ io.sockets.on('connection', function (socket) {
     socket.on('disconnect',function(){
         var toDel = socketQueue.indexOf(this);
         if(toDel != -1){
-            console.log("[Status]"+ userQueue[toDel]  +" logged off." );
+            console.log("[Status]"+ userQueue[toDel] + "(ID: "+ idQueue[toDel]+ " "+ toDel +")" +" logged out." );
             for(var i=0 ; i<numQue ; i++)
-                socketQueue[i].emit("someoneLeft",{'username':userQueue[toDel]});
+                socketQueue[i].emit("someoneLeft",{'username':userQueue[toDel],'ID':idQueue[toDel]});
             //Garbage collection
             socketQueue.splice(toDel,1);
             userQueue.splice(toDel,1);
+            idQueue.splice(toDel,1);
             --numQue;
             console.log("[Status]" + numQue + " connections in group." );
         }
