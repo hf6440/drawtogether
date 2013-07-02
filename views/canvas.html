@@ -6,10 +6,16 @@
 </head>
 <body>
 <h1>Please draw in the border.</h1>
-<h3>This page will connect to 'http://localhost', so please change the <br>address(in 26th line) to the corresponding static IP address of your server.</h3>
+<h3>This page will connect to 'http://localhost', so please change the <br>address to the corresponding static IP address of your server.</h3>
+<div>
 <p class = "solid">
     <canvas id="canvas1" width="720" height="480"></canvas>
 </p>
+</div>
+<div>
+<table id="table" style = "border-style: solid;width:360px; height:30px">
+</table>
+</div>
 <button onclick="emitcleanBoard()">Clean the Whiteboard</button>
 <script src="/socket.io/lib/socket.io.js"></script>
 <script>
@@ -20,6 +26,10 @@
     var userName = "New User";
     var canvasX = new Array();
     var canvasY = new Array();
+    var canvasID = new Array();
+    var idQueue = new Array();
+    var trackQueue = new Array();
+    var myID = 0;
     var isContinuous = new Array();
     var track = {};
     //socket.io
@@ -28,21 +38,33 @@
         socket.emit('webBegin',{'username':userName});
     });
     socket.on('echo', function (data) {
-        pushPoints(data.x,data.y,data.isContinuous);
-        draw(context1,canvasX,canvasY,isContinuous,track);
+        pushPoints(data.x,data.y,data.isContinuous,data.ID);
+        draw(context1,canvasX,canvasY,isContinuous,canvasID,trackQueue);
     });
     socket.on('someoneJoin', function (data) {
-        alert(data.username + " joined us.");
+        updateInformation(data.username + " joined us.");
     });
     socket.on('someoneLeft', function (data) {
-        alert(data.username + " left.");
+        updateInformation(data.username + " left.");
     });
     socket.on('cleanBoard', function () {
+        updateInformation("Whiteboard got cleaned.");
         cleanBoard();
     });
+    socket.on('someoneID', function (data) {
+        if(myID == 0 && (!data.isHistory))
+        {
+            myID = data.ID;
+        }
+        idQueue.push(data);
+        var newTrack = {};
+        newTrack.id = data.ID;
+        trackQueue.push(newTrack);
+    });
+
     var sentData = function(CoorX,CoorY,isContinuous)
     {
-        socket.emit('gotData',{'x':CoorX, 'y':CoorY, 'isContinuous':isContinuous});
+        socket.emit('gotData',{'x':CoorX, 'y':CoorY, 'isContinuous':isContinuous, 'ID':myID});
     }
     //canvas events
     //context,xArray,yArray,isContinuous,track
@@ -50,8 +72,6 @@
     {
         readytoDraw = true;
         sentData(e.pageX-this.offsetLeft, e.pageY-this.offsetTop,false);
-        //pushPoints(e.pageX-this.offsetLeft, e.pageY-this.offsetTop,false);
-        //draw(context1,canvasX,canvasY,isContinuous,track);
     }
     canvas1.onmousemove = function(e)
     {
@@ -67,16 +87,27 @@
     {
         readytoDraw = false;
     }
-    var pushPoints = function(x,y,con){
+    var pushPoints = function(x,y,con,id){
         canvasX.push(x);
         canvasY.push(y);
+        canvasID.push(id);
         isContinuous.push(con);
+
     }
-    var draw = function(context,xArray,yArray,con,track){
+    var draw = function(context,xArray,yArray,con,ids,tracks){
         context.strokeStyle = '#000000';
         context.lineJoin = 'round';
         context.lineWidth = 3;
         while(xArray.length>0){
+            var currentID = ids.pop();
+            var track;
+            for(var i = 0;i<tracks.length;++i)
+            {
+                if(tracks[i].id == currentID){
+                    track=tracks[i];
+                    break;
+                }
+            }
             track.preX = track.x;
             track.preY = track.y;
             track.x = xArray.pop();
@@ -107,6 +138,11 @@
             if(i==720) self.clearInterval();
         },60);
 
+    }
+    var updateInformation = function(data){
+        var content = new Array();
+        content.push('<tr><td>' + data + '</td></tr>');
+        document.getElementById('table').innerHTML = content.join('');
     }
 
 </script>
